@@ -1,7 +1,9 @@
+import argparse
 import datetime
 import os
 from collections import defaultdict
 from http.server import HTTPServer, SimpleHTTPRequestHandler
+from pprint import pprint
 
 from dotenv import load_dotenv
 
@@ -47,23 +49,24 @@ def open_excel(file_path):
 
 def parse_excel(file_path):
     excel_transform = open_excel(file_path)
-    uniq_categori = set()
+    uniq_categoris = set()
     for wine in excel_transform:
         if 'Категория' in wine:
-            uniq_categori.add(wine['Категория'])
-    wine_categori = defaultdict(list)
-    for element in uniq_categori:
-        wine_categori[element] = []
-    for element in range(len(excel_transform)):
-        for categ in wine_categori.keys():
-            if excel_transform[element]['Категория'] == categ:
-                wine_categori[categ].append(excel_transform[element])
-    return wine_categori
+            uniq_categoris.add(wine['Категория'])
+    wine_categoris = defaultdict(list)
+    for categori in uniq_categoris:
+        for element in range(len(excel_transform)):
+            if excel_transform[element]['Категория'] == categori:
+                wine_categoris[categori].append(excel_transform[element]) 
+    return wine_categoris
 
 
 def main():
     load_dotenv()
     file_path = os.getenv('FILE_PATH', 'DEFAULT_FILE_PATH')
+    parser = argparse.ArgumentParser(description='Путь до excel файла')
+    parser.add_argument('--excel_path', default=file_path)
+    args = parser.parse_args()
     env = Environment(
         loader=FileSystemLoader('.'),
         autoescape=select_autoescape(['html', 'xml'])
@@ -72,8 +75,9 @@ def main():
     rendered_page = template.render(
         delta=calculate_year(),
         word_for_delta=selection_word(calculate_year()),
-        wine_categori=parse_excel(file_path)
+        wine_categori=parse_excel(args.excel_path)
     )
+    pprint(parse_excel(args.excel_path))
     with open('index.html', 'w', encoding="utf8") as file:
         file.write(rendered_page)
     server = HTTPServer(('0.0.0.0', 8000), SimpleHTTPRequestHandler)

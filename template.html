@@ -114,11 +114,11 @@
           </div>
         </div>
         <div class="row">
-          {% for categ in categori_wine%}
+          {% for categori, wines in wine_categori.items() %}
           <div class="col-12 section-title text-center mb-5">
-            <h2 class="d-block">{{categ}}</h2>
+            <h2 class="d-block">{{categori}}</h2>
           </div>
-            {% for wine in categori_wine[categ]%}
+            {% for wine in wines %}
               <div class="col-lg-4 mb-5 col-md-6">
                 <div class="wine_v_1 text-center pb-4 pt-5">
                   <img src="images/{{wine.Картинка}}" alt="Image" class="img-fluid">
