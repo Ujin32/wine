@@ -3,7 +3,6 @@ import datetime
 import os
 from collections import defaultdict
 from http.server import HTTPServer, SimpleHTTPRequestHandler
-from pprint import pprint
 
 from dotenv import load_dotenv
 
@@ -12,15 +11,15 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 import pandas
 
 
-def selection_word(delta):
-    mod = delta % 100
-    if mod == 1:
+def choosing_word(age_winery):
+    division_remainder = age_winery % 100
+    if division_remainder == 1:
         word = 'год'
         return word
-    elif mod in range(2, 5):
+    elif division_remainder in range(2, 5):
         word = 'года'
         return word
-    elif mod in range(11, 21):
+    elif division_remainder in range(11, 21):
         word = 'лет'
         return word
     else:
@@ -28,37 +27,19 @@ def selection_word(delta):
         return word
 
 
-def calculate_year():
-    now = datetime.datetime.now()
-    start_event = 1920
-    event_year = now.year
-    delta = event_year - start_event
-    return delta
-
-
-def open_excel(file_path):
-    excel_data_df = pandas.read_excel(
-        file_path,
-        sheet_name='Лист1',
-        na_values=' ',
-        keep_default_na=False
-    )
-    excel_transform = excel_data_df.to_dict(orient='records')
-    return excel_transform
+def calculate_age_winery():
+    year_foundation = 1920
+    current_year = datetime.datetime.now().year
+    age_winery = current_year - year_foundation
+    return age_winery
 
 
 def parse_excel(file_path):
-    excel_transform = open_excel(file_path)
-    uniq_categoris = set()
-    for wine in excel_transform:
-        if 'Категория' in wine:
-            uniq_categoris.add(wine['Категория'])
-    wine_categoris = defaultdict(list)
-    for categori in uniq_categoris:
-        for element in range(len(excel_transform)):
-            if excel_transform[element]['Категория'] == categori:
-                wine_categoris[categori].append(excel_transform[element]) 
-    return wine_categoris
+    wines = pandas.read_excel(file_path, na_values=None, keep_default_na=False).to_dict(orient='records')
+    wine_categories = defaultdict(list)
+    for wine in wines:
+        wine_categories[wine['Категория']].append(wine)
+    return wine_categories
 
 
 def main():
@@ -72,12 +53,12 @@ def main():
         autoescape=select_autoescape(['html', 'xml'])
     )
     template = env.get_template('template.html')
+    age_winery = calculate_age_winery()
     rendered_page = template.render(
-        delta=calculate_year(),
-        word_for_delta=selection_word(calculate_year()),
-        wine_categori=parse_excel(args.excel_path)
+        age_winery=age_winery,
+        word_for_age_winery=choosing_word(age_winery),
+        wine_categories=parse_excel(args.excel_path)
     )
-    pprint(parse_excel(args.excel_path))
     with open('index.html', 'w', encoding="utf8") as file:
         file.write(rendered_page)
     server = HTTPServer(('0.0.0.0', 8000), SimpleHTTPRequestHandler)
