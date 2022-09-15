@@ -11,8 +11,8 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 import pandas
 
 
-def choosing_word(age_winery):
-    division_remainder = age_winery % 100
+def choosing_word(winery_age):
+    division_remainder = winery_age % 100
     if division_remainder == 1:
         word = 'год'
         return word
@@ -27,11 +27,11 @@ def choosing_word(age_winery):
         return word
 
 
-def calculate_age_winery():
-    year_foundation = 1920
+def calculate_winery_age():
+    foundation_year = 1920
     current_year = datetime.datetime.now().year
-    age_winery = current_year - year_foundation
-    return age_winery
+    winery_age = current_year - foundation_year
+    return winery_age
 
 
 def parse_excel(file_path):
@@ -53,10 +53,10 @@ def main():
         autoescape=select_autoescape(['html', 'xml'])
     )
     template = env.get_template('template.html')
-    age_winery = calculate_age_winery()
+    winery_age = calculate_winery_age()
     rendered_page = template.render(
-        age_winery=age_winery,
-        word_for_age_winery=choosing_word(age_winery),
+        winery_age=winery_age,
+        word_for_winery_age=choosing_word(winery_age),
         wine_categories=parse_excel(args.excel_path)
     )
     with open('index.html', 'w', encoding="utf8") as file:
